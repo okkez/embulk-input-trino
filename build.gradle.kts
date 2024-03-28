@@ -3,10 +3,12 @@ plugins {
     signing
     id("org.embulk.embulk-plugins") version("0.6.2")
     id("com.diffplug.spotless") version("6.25.0")
+    id("cl.franciscosolis.sonatype-central-upload") version("1.0.3")
 }
 
 group = "io.github.okkez"
 version = "0.0.1"
+description = "Trino input plugin for Embulk loads records from Trino using trino-client."
 
 java {
     toolchain {
@@ -91,6 +93,7 @@ publishing {
                 packaging = "jar"
                 name = project.name
                 description = project.description
+                url = "https://github.com/okkez/embulk-input-trino"
 
                 licenses {
                     license {
@@ -122,6 +125,24 @@ signing {
 
 tasks.withType<Sign>().configureEach() {
     onlyIf { System.getenv()["SKIP_SIGNING"] == null }
+}
+
+tasks.sonatypeCentralUpload {
+    dependsOn("jar", "sourcesJar", "javadocJar", "generatePomFileForMavenPublication")
+    username = System.getenv("SONATYPE_CENTRAL_USERNAME")
+    password = System.getenv("SONATYPE_CENTRAL_PASSWORD")
+
+    archives = files(
+        tasks.named("jar"),
+        tasks.named("sourcesJar"),
+        tasks.named("javadocJar"),
+    )
+    pom = file(tasks.named("generatePomFileForMavenPublication").get().outputs.files.single())
+
+    signingKey = System.getenv("PGP_SIGNING_KEY")
+    signingKeyPassphrase = System.getenv("PGP_SIGNING_KEY_PASSPHRASE")
+
+    publishingType = System.getenv().getOrDefault("SONATYPE_CENTRAL_PUBLISHING_TYPE", "MANUAL")
 }
 
 tasks.gem {
