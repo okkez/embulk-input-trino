@@ -65,8 +65,6 @@ $ ./gradlew build
 
 ## Release
 
-TODO
-
 ```console
 $ ./gradlew publish
 ```

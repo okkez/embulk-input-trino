@@ -9,6 +9,7 @@ plugins {
 group = "io.github.okkez"
 version = "0.0.1"
 description = "Trino input plugin for Embulk loads records from Trino using trino-client."
+val projectUrl = "https://github.com/okkez/embulk-input-trino"
 
 java {
     toolchain {
@@ -93,7 +94,7 @@ publishing {
                 packaging = "jar"
                 name = project.name
                 description = project.description
-                url = "https://github.com/okkez/embulk-input-trino"
+                url = projectUrl
 
                 licenses {
                     license {
@@ -105,7 +106,7 @@ publishing {
                 scm {
                     connection = "scm:git:git://github.com/okkez/embulk-input-trino.git"
                     developerConnection = "scm:git:git@github.com:okkez/embulk-input-trino.git"
-                    url = "https://github.com/okkez/embulk-input-trino"
+                    url = projectUrl
                 }
                 developers {
                     developer {
@@ -127,6 +128,8 @@ tasks.withType<Sign>().configureEach() {
     onlyIf { System.getenv()["SKIP_SIGNING"] == null }
 }
 
+// TODO Use official Gradle plugin or something to upload artifacts to sonatype central portal.
+// See https://central.sonatype.org/publish/publish-portal-gradle/
 tasks.sonatypeCentralUpload {
     dependsOn("jar", "sourcesJar", "javadocJar", "generatePomFileForMavenPublication")
     username = System.getenv("SONATYPE_CENTRAL_USERNAME")
@@ -149,14 +152,22 @@ tasks.gem {
     from("LICENSE.txt")
     setProperty("authors", listOf("okkez"))
     setProperty("email", listOf("okkez000@gmail.com"))
-    setProperty("description", "Trino input plugin for Embulk")
-    setProperty("summary", "Trino input plugin for Embulk")
-    setProperty("homepage", "https://github.com/okkez/embulk-input-trino")
+    setProperty("description", project.description.toString())
+    setProperty("summary", project.description.toString())
+    setProperty("homepage", projectUrl)
     setProperty("licenses", listOf("Apache-2.0"))
 }
 
 tasks.gemPush {
     setProperty("host", "https://rubygems.org")
+}
+
+tasks.build {
+    dependsOn(tasks.gem)
+}
+
+tasks.publish {
+    dependsOn(tasks.sonatypeCentralUpload, tasks.gemPush)
 }
 
 // For local testing
