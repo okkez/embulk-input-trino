@@ -155,6 +155,10 @@ tasks.gem {
     setProperty("licenses", listOf("Apache-2.0"))
 }
 
+tasks.gemPush {
+    setProperty("host", "https://rubygems.org")
+}
+
 // For local testing
 tasks.register("cacheToMavenLocal", Sync::class) {
     from(File(gradle.gradleUserHomeDir, "caches/modules-2/files-2.1"))
